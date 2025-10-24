@@ -17,23 +17,19 @@ datasource db {
 model Kategorie {
   id          String        @id @default(cuid())
   name        String
-  produktArten ProduktArt[]
+  produkte Produkt[]
 }
 
-model ProduktArt {
+model Produkt {
   id           String          @id @default(cuid())
   name         String
   beschreibung String
   preis        Float
   kategorieId  String
   kategorie    Kategorie       @relation(fields: [kategorieId], references: [id])
-  einzelprodukte Einzelprodukt[]
 }
 
-model Einzelprodukt {
-  id            String       @id @default(cuid())
-  ablaufdatum   DateTime
-  produktArtId  String
-  produktArt    ProduktArt   @relation(fields: [produktArtId], references: [id])
-}
+
+
+//Bestellung, Kunde 
 
