@@ -5,11 +5,26 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Produkt {
+  id            String    @id @default(cuid())
+  name          String
+  beschreibung  String
+  preis         Float
+  kategorie     Kategorie @relation(name:"ProduktKategorie",fields: [kategorieId], references: [id])
+  kategorieId   String
+}
+
+model Kategorie {
+  id        String     @id @default(cuid())
+  name      String
+  produkte  Produkt[] @relation("ProduktKategorie")
+}
+
