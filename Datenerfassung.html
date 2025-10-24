@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Datenerfassung</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <h3>Produktdaten erfassen</h3>
+      <form id="productForm">
+    <input type="text" id="name" placeholder="Produktname" required>
+    <input type="text" id="category" placeholder="Kategorie" required>
+    <input type="number" id="price" placeholder="Preis" required>
+    <input type="number" id="stock" placeholder="Lagerbestand" required>
+    <button type="submit">Speichern</button>
+  </form>
+
+    <script>
+      document.getElementById("productForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const product = {
+        name: name.value,
+        category: category.value,
+        price: parseFloat(price.value),
+        stock: parseInt(stock.value)
+      };
+      const products = JSON.parse(localStorage.getItem("products")) || [];
+      products.push(product);
+      localStorage.setItem("products", JSON.stringify(products));
+      alert("Produkt gespeichert!");
+      e.target.reset();
+    });
+
+    </script>
+  </body>
+</html>

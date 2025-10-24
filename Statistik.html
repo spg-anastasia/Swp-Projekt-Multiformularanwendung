@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statistik</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <script>
+         const products = JSON.parse(localStorage.getItem("products")) || [];
+    const statsDiv = document.getElementById("stats");
+
+    if (products.length === 0) {
+      statsDiv.innerHTML = "<p>Keine Produkte vorhanden.</p>";
+    } else {
+      statsDiv.innerHTML = `
+        <p>Gesamtanzahl der Produkte: <b>${products.length}</b></p>
+      `;
+    }
+    </script>
+    </html>
+   
+  
