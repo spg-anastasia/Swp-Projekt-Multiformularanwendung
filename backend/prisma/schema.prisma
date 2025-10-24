@@ -18,6 +18,7 @@ model Produkt {
   name          String
   beschreibung  String
   preis         Float
+  lagerbestand Int  @default(0) 
   kategorie     Kategorie @relation(name:"ProduktKategorie",fields: [kategorieId], references: [id])
   kategorieId   String
 }
