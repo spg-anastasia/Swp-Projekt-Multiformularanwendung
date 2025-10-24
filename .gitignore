@@ -1,0 +1,13 @@
+# Node.js
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Prisma & Datenbank
+/dev.db
+/prisma/migrations/
+.env
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
