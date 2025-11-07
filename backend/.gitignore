@@ -1,14 +1,5 @@
-# Node.js
-node_modules/
-npm-debug.log
-package-lock.json
-
-# Prisma & Datenbank
-/dev.db
-/prisma/migrations/
+node_modules
+# Keep environment variables out of version control
 .env
 
-# Betriebssystem
-.DS_Store
-Thumbs.db
 /generated/prisma
