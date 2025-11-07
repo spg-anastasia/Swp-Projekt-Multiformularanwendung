@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrieren</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <form id="registerForm">
+    <h2>Registrieren</h2>
+     <label for="username">Benutzername:</label>
+    <input type="text" id="username" placeholder="Benutzername" required>
+     <label for="password">Passwort:</label>
+    <input type="password" id="password" placeholder="Passwort" required>
+    <button type="submit">Registrieren</button>
+    <button type="button" onclick="location.href='Anmelden.html'">Anmelden</button>
+  </form>
+
+<script>
+const registerForm = document.getElementById("registerForm");
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = {
+    username: registerForm.username.value,
+    password: registerForm.password.value
+  };
+  const res = await fetch("http://localhost:3000/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  if(res.ok) {
+    alert("Bauer registriert!");
+    window.location.href = "Anmelden.html";
+  } else {
+    alert(result.error);
+  }
+});
+</script>
+</body>
+</html>

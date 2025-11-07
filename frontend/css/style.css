@@ -3,7 +3,6 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #d0f0c0;
-
 }
 
 header {
@@ -32,6 +31,12 @@ h2 {
   margin-bottom: 10px;
   color: #4a7c2c;
   font-size: 26px;
+}
+
+h3 {
+  text-align: center;
+  color: #4a7c2c;
+  margin-bottom: 15px;
 }
 
 p {
@@ -83,9 +88,6 @@ form h2 {
   margin-bottom: 20px;
 }
 
-h3{
-  text-align: center;
-}
 label {
   margin-top: 10px;
   font-weight: bold;
@@ -123,6 +125,33 @@ button:hover {
   background-color: #5a8f33;
 }
 
+/* Tabellen */
+table {
+  border-collapse: collapse;
+  width: 90%;
+  margin: 20px auto;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+th {
+  background-color: #7fbf4d;
+  color: white;
+}
+
+tr:hover {
+  background-color: #d8f5a2;
+}
+
+/* Tiere am unteren Bildschirmrand */
 #animals {
   font-size: 80px;
   position: fixed;

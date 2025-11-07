@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kundenverwaltung</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<h2>Kunden verwalten</h2>
+<form id="addCustomerForm">
+     <label for="name">Name:</label>
+  <input type="text" id="name" placeholder="Name" required>
+   <label for="email">Email:</label>
+  <input type="email" id="email" placeholder="E-Mail" required> 
+  <button type="submit">Hinzufügen</button>
+</form>
+<table id="customerTable">
+<thead><tr><th>Name</th><th>E-Mail</th><th>Aktionen</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<script>
+const tbody = document.querySelector("#customerTable tbody");
+
+async function loadCustomers() {
+  const res = await fetch("http://localhost:3000/api/kunden");
+  const kunden = await res.json();
+  tbody.innerHTML = "";
+  kunden.forEach((k) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${k.name}</td><td>${k.email}</td>
+      <td><button onclick="deleteCustomer('${k.id}')">Löschen</button></td>`;
+    tbody.appendChild(row);
+  });
+}
+
+async function deleteCustomer(id) {
+  await fetch(`http://localhost:3000/api/kunden/${id}`, { method: "DELETE" });
+  loadCustomers();
+}
+
+document.getElementById("addCustomerForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const kunde = { name: name.value, email: email.value };
+  await fetch("http://localhost:3000/api/kunden", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(kunde)
+  });
+  e.target.reset();
+  loadCustomers();
+});
+
+loadCustomers();
+</script>
+</body>
+</html>

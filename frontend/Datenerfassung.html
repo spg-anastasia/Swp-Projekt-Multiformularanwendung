@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produkt erfassen</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<form id="productForm">
+  <h2>Produkt erfassen</h2>
+
+  <label for="name">Name:</label>
+  <input type="text" id="name" placeholder="Produktname" required>
+
+  <label for="beschreibung">Beschreibung:</label>
+  <input type="text" id="beschreibung" placeholder="Beschreibung">
+
+  <label for="preis">Preis (€):</label>
+  <input type="number" id="preis" placeholder="Preis" required>
+
+  <label for="kategorie">Kategorie:</label>
+  <select id="kategorie" required>
+    <option value="">Kategorie wählen</option>
+  </select>
+
+  <button type="submit">Speichern</button>
+</form>
+
+<script>
+async function loadCategories() {
+  const res = await fetch("http://localhost:3000/api/kategorien"); // Backend muss Endpoint haben
+  const categories = await res.json();
+  const select = document.getElementById("kategorie");
+  categories.forEach(cat => {
+    const option = document.createElement("option");
+    option.value = cat.id;
+    option.textContent = cat.name;
+    select.appendChild(option);
+  });
+}
+
+document.getElementById("productForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const produkt = {
+    name: name.value,
+    beschreibung: beschreibung.value,
+    preis: parseFloat(preis.value),
+    kategorieId: kategorie.value
+  };
+  const res = await fetch("http://localhost:3000/api/produkte", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(produkt)
+  });
+  const result = await res.json();
+  alert("Produkt gespeichert: " + result.name);
+  e.target.reset();
+});
+
+// Kategorien beim Laden der Seite abrufen
+loadCategories();
+</script>
+
+</body>
+</html>
