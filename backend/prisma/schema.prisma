@@ -5,31 +5,62 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+model Bauer {
+  id       String  @id @default(cuid())
+  username String  @unique
+  password String  // (in echt: Passwort gehasht speichern!)
+}
 
 model Kategorie {
-  id          String        @id @default(cuid())
-  name        String
-  produkte Produkt[]
+  id        String     @id @default(cuid())
+  name      String
+  produkte  Produkt[]
 }
 
 model Produkt {
-  id           String          @id @default(cuid())
+  id           String           @id @default(cuid())
   name         String
   beschreibung String
   preis        Float
   kategorieId  String
-  kategorie    Kategorie       @relation(fields: [kategorieId], references: [id])
+  kategorie    Kategorie        @relation(fields: [kategorieId], references: [id])
+  bestellungen BestelltesProdukt[]
 }
 
+model Kunde {
+  id            String             @id @default(cuid())
+  name          String
+  email         String             @unique
+  bestellungen  Bestellung[]
+}
 
+model Bestellung {
+  id                  String               @id @default(cuid())
+  datum               DateTime             @default(now())
+  kundeId             String
+  kunde               Kunde                @relation(fields: [kundeId], references: [id])
+  bestellteProdukte   BestelltesProdukt[]
+  gesamtpreis         Float                @default(0)
+}
 
-//Bestellung, Kunde 
+model BestelltesProdukt {
+  id            String      @id @default(cuid())
+  bestellungId  String
+  produktId     String
+  menge         Int          @default(1)
+  einzelpreis   Float        // Preis zum Zeitpunkt der Bestellung
 
+  bestellung    Bestellung   @relation(fields: [bestellungId], references: [id])
+  produkt       Produkt      @relation(fields: [produktId], references: [id])
+
+  @@unique([bestellungId, produktId])
+}
