@@ -1,19 +1,38 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-   <title>Bauernhof-Shop</title>
+    <meta charset="UTF-8">
+    <title>Bauernhof-Shop</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="startseite">
-  <h1>Willkommen im Bauernhof-Shop</h1>
-  <p>Hier finden Sie frische Produkte vom Bauernhof.</p>
-    </div>
+    <header>Bauernhof-Shop</header>
 
-  <a href="Registrieren.html" class="login-button">Registrieren</a>
-    <a href="Anmelden.html" class="login-button">Anmelden</a>
-    <a href="Datenerfassung.html">Produktdaten</a>
-    <a href="Verwaltung.html">Produktverwaltung</a>
-    <a href="Statistik.html">Statistik</a>
+    <div id="startseite">
+      <h2>Willkommen im Bauernhof-Shop</h2>
+      <p>Hier finden Sie frische Produkte vom Bauernhof.</p>
+
+      <div class="nav">
+          <a href="Datenerfassung.html">Produktdaten</a>
+          <a href="Produktverwaltung.html">Produktverwaltung</a>
+          <a href="Kundenverwaltung.html">Kundenverwaltung</a>
+          <a href="Statistik.html">Statistik</a>
+      </div>
+    </div>
+    <div id="animals">🐄 🐖 🐑 🐓 🐐 🌳</div>
+
+
+    <script>
+      window.addEventListener('load', () => {
+        // Prüfen, ob Token vorhanden ist
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          // Kein Token -> zurück zur Login-Seite
+          alert("Bitte zuerst anmelden!");
+          window.location.href = "login.html";
+        }
+      });
+    </script>
 </body>
 </html>

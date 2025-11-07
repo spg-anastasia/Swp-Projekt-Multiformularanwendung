@@ -1,68 +1,143 @@
-/* Seite vollständig zentrieren */
+/* Grundlayout */
 body {
   margin: 0;
-  padding: 0;
   font-family: Arial, sans-serif;
-  background: white; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background: #d0f0c0;
+
 }
 
-form {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  border: black 1px solid;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-label {
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-input {
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: green;
+header {
+  background: #7fbf4d;
+  padding: 20px;
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: green;
-}
-
-
-.login-button {
-  background-color: green;
-}
-
-.login-button:hover {
-  background-color: green;
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 #startseite {
   text-align: center;
   padding: 50px;
-  background-color: greenyellow;
+  background-color: #d8f5a2;
+  border-radius: 12px;
+  max-width: 900px;
+  margin: 40px auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+  min-width: 400px;
+}
+
+h2 {
+  margin-bottom: 10px;
+  color: #4a7c2c;
+  font-size: 26px;
+}
+
+p {
+  font-size: 18px;
+  color: #444;
+}
+
+.nav {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.nav a {
+  padding: 12px 25px;
+  background: #7fbf4d;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 18px;
+  transition: 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.nav a:hover {
+  background: #69a73e;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+}
+
+/* Formulare */
+form {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  width: 320px;
+  margin: 60px auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e0e0;
+}
+
+form h2 {
+  text-align: center;
+  color: #4a7c2c;
+  margin-bottom: 20px;
+}
+
+h3{
+  text-align: center;
+}
+label {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+input {
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: #7fbf4d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+button:hover {
+  background-color: #69a73e;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+}
+
+.login-button {
+  background-color: #5a8f33;
+}
+
+#animals {
+  font-size: 80px;
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+@keyframes floatAnimals {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+  100% { transform: translateY(0px) rotate(-5deg); }
 }
