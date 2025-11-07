@@ -60,3 +60,5 @@ app.get("/api/statistik/meistverkauft", async (req, res) => {
 });
 
 app.listen(3000, () => console.log("🚜 Server läuft auf http://localhost:3000"));
+
+app.use(express.static("public"));
