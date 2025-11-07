@@ -1,0 +1,107 @@
+ <!-- //Kunden anlegen oder bearbeiten -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kundenverwaltung</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>Kundenverwaltung</header>
+
+    <div id="startseite">
+        <h2>Kunden verwalten</h2>
+
+        <!-- Kunden hinzufügen -->
+        <form id="addCustomerForm">
+            <h3>Neuen Kunden anlegen</h3>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">E-Mail:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Telefon:</label>
+            <input type="text" id="phone" name="phone" required>
+
+            <button type="submit">Kunde hinzufügen</button>
+        </form>
+
+        <!-- Kundenliste -->
+        <h3>Kundenliste</h3>
+        <table id="customerTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>E-Mail</th>
+                    <th>Telefon</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Kunden erscheinen hier -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const addForm = document.getElementById("addCustomerForm");
+        const customerTableBody = document.querySelector("#customerTable tbody");
+
+        let customers = [];
+
+        function renderCustomers() {
+            customerTableBody.innerHTML = "";
+            customers.forEach((customer, index) => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${customer.name}</td>
+                    <td>${customer.email}</td>
+                    <td>${customer.phone}</td>
+                    <td>
+                        <button onclick="editCustomer(${index})">Bearbeiten</button>
+                        <button onclick="deleteCustomer(${index})">Löschen</button>
+                    </td>
+                `;
+                customerTableBody.appendChild(row);
+            });
+        }
+
+        addForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = addForm.name.value;
+            const email = addForm.email.value;
+            const phone = addForm.phone.value;
+
+            customers.push({ name, email, phone });
+            renderCustomers();
+            addForm.reset();
+        });
+
+        function deleteCustomer(index) {
+            if (confirm("Kunden wirklich löschen?")) {
+                customers.splice(index, 1);
+                renderCustomers();
+            }
+        }
+
+        function editCustomer(index) {
+            const customer = customers[index];
+            const newName = prompt("Name:", customer.name);
+            const newEmail = prompt("E-Mail:", customer.email);
+            const newPhone = prompt("Telefon:", customer.phone);
+
+            if (newName !== null && newEmail !== null && newPhone !== null) {
+                customers[index] = {
+                    name: newName,
+                    email: newEmail,
+                    phone: newPhone
+                };
+                renderCustomers();
+            }
+        }
+    </script>
+</body>
+</html>
