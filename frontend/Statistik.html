@@ -1,24 +1,42 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Statistik</title>
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <script>
-         const products = JSON.parse(localStorage.getItem("products")) || [];
-    const statsDiv = document.getElementById("stats");
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistik</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
-    if (products.length === 0) {
-      statsDiv.innerHTML = "<p>Keine Produkte vorhanden.</p>";
-    } else {
-      statsDiv.innerHTML = `
-        <p>Gesamtanzahl der Produkte: <b>${products.length}</b></p>
-      `;
-    }
-    </script>
-    </html>
+<h2>Produkt-Statistik</h2>
+
+<table id="statsTable">
+  <thead>
+    <tr><th>Produkt</th><th>Anzahl Bestellungen</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+async function loadStats() {
+  const res = await fetch("http://localhost:3000/api/statistik/produkte");
+  const stats = await res.json();
+
+  const tbody = document.querySelector("#statsTable tbody");
+  tbody.innerHTML = "";
+
+  stats.forEach(s => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${s.produkt}</td><td>${s.anzahl}</td>`;
+    tbody.appendChild(row);
+  });
+}
+
+loadStats();
+</script>
+
+</body>
+</html>
+
    
   

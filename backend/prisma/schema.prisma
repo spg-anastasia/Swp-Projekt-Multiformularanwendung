@@ -12,7 +12,7 @@ datasource db {
 model Bauer {
   id       String  @id @default(cuid())
   username String  @unique
-  password String  // (in echt: Passwort gehasht speichern!)
+  password String  
 }
 
 model Kategorie {

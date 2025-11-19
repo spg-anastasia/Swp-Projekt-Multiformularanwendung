@@ -1,20 +1,29 @@
-<!-- login.html -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Willkommen</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hauptmenü</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="startseite">
-    <h2>Willkommen im Bauernhof-Shop</h2>
-    <p>Bitte registrieren oder melden Sie sich an, um fortzufahren.</p>
 
-    <div class="nav">
-      <a href="Registrieren.html">Registrieren</a>
-      <a href="Anmelden.html">Anmelden</a>
-    </div>
-  </div>
+<h2>Willkommen im Bauern-Dashboard</h2>
+
+<nav>
+  <button onclick="location.href='Datenerfassung.html'">Produkt erfassen</button>
+  <button onclick="location.href='Produktverwaltung.html'">Produkte verwalten</button>
+  <button onclick="location.href='Kundenverwaltung.html'">Kunden verwalten</button>
+  <button onclick="location.href='Bestellung.html'">Bestellung erfassen</button>
+  <button onclick="location.href='Statistik.html'">Statistik</button>
+</nav>
+
+<script>
+if(!localStorage.getItem("bauer")) {
+  location.href = "Anmelden.html";
+}
+</script>
+
 </body>
 </html>
+

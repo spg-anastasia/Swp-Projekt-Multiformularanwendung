@@ -1,1 +1,139 @@
 //Bestellung erfassen
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bestellung erfassen</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<h2>Bestellung erfassen</h2>
+
+<form id="orderForm">
+
+  <label>Kunde:</label>
+  <select id="kundeSelect" required></select>
+
+  <label>Produkt:</label>
+  <select id="produktSelect" required></select>
+
+  <label>Menge:</label>
+  <input type="number" id="menge" min="1" value="1" required>
+
+  <button type="button" id="addProductBtn">Produkt hinzufügen</button>
+</form>
+
+<h3>Ausgewählte Produkte</h3>
+<table id="orderTable">
+  <thead>
+    <tr><th>Produkt</th><th>Menge</th><th>Einzelpreis</th><th>Summe</th><th>Aktion</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h3>Gesamtpreis: <span id="gesamtpreis">0.00</span> €</h3>
+
+<button id="saveOrderBtn">Bestellung speichern</button>
+
+<script>
+let produkte = [];
+let warenkorb = [];
+
+async function loadData() {
+  const kundenRes = await fetch("http://localhost:3000/api/kunden");
+  const kunden = await kundenRes.json();
+
+  const kundeSelect = document.getElementById("kundeSelect");
+  kunden.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k.id;
+    opt.textContent = k.name;
+    kundeSelect.appendChild(opt);
+  });
+
+  const prodRes = await fetch("http://localhost:3000/api/produkte");
+  produkte = await prodRes.json();
+
+  const prodSelect = document.getElementById("produktSelect");
+  produkte.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.name} (${p.preis}€)`;
+    prodSelect.appendChild(opt);
+  });
+}
+
+document.getElementById("addProductBtn").onclick = () => {
+  const prodId = produktSelect.value;
+  const menge = parseInt(document.getElementById("menge").value);
+
+  if (!prodId) return alert("Produkt auswählen!");
+
+  const produkt = produkte.find(p => p.id === prodId);
+
+  warenkorb.push({
+    produktId: produkt.id,
+    name: produkt.name,
+    menge,
+    einzelpreis: produkt.preis
+  });
+
+  renderTable();
+};
+
+function renderTable() {
+  const tbody = document.querySelector("#orderTable tbody");
+  tbody.innerHTML = "";
+
+  let total = 0;
+
+  warenkorb.forEach((item, index) => {
+    const summe = item.menge * item.einzelpreis;
+    total += summe;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.menge}</td>
+      <td>${item.einzelpreis.toFixed(2)}€</td>
+      <td>${summe.toFixed(2)}€</td>
+      <td><button onclick="removeItem(${index})">X</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  document.getElementById("gesamtpreis").textContent = total.toFixed(2);
+}
+
+function removeItem(i) {
+  warenkorb.splice(i, 1);
+  renderTable();
+}
+
+document.getElementById("saveOrderBtn").onclick = async () => {
+  if (warenkorb.length === 0) return alert("Keine Produkte hinzugefügt!");
+
+  const bestellung = {
+    kundeId: kundeSelect.value,
+    produkte: warenkorb
+  };
+
+  const res = await fetch("http://localhost:3000/api/bestellungen", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bestellung)
+  });
+
+  const result = await res.json();
+
+  alert("Bestellung gespeichert!");
+  location.reload();
+};
+
+loadData();
+</script>
+
+</body>
+</html>
