@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Bauer {
+  id       String @id @default(cuid())
+  username String @unique
+  password String
+}
+
+model Kategorie {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  produkte Produkt[]
+}
+
+model Produkt {
+  id           String              @id @default(cuid())
+  name         String              @unique
+  beschreibung String
+  preis        Float
+  kategorieId  String
+  bestellungen BestelltesProdukt[]
+  kategorie    Kategorie           @relation(fields: [kategorieId], references: [id])
+}
+
+model Kunde {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  bestellungen Bestellung[]
+}
+
+model Bestellung {
+  id                String              @id @default(cuid())
+  datum             DateTime            @default(now())
+  kundeId           String
+  gesamtpreis       Float               @default(0)
+  bestellteProdukte BestelltesProdukt[]
+  kunde             Kunde               @relation(fields: [kundeId], references: [id])
+}
+
+model BestelltesProdukt {
+  id           String     @id @default(cuid())
+  bestellungId String
+  produktId    String
+  menge        Int        @default(1)
+  einzelpreis  Float
+  produkt      Produkt    @relation(fields: [produktId], references: [id])
+  bestellung   Bestellung @relation(fields: [bestellungId], references: [id])
+
+  @@unique([bestellungId, produktId])
+}
