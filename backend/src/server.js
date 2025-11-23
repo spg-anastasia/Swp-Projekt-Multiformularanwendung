@@ -1,29 +1,37 @@
-import express from "express";
-import cors from "cors";
-import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
+// server.js
+const express = require("express");
+const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 const app = express();
 
-app.use(cors());
+// Middleware
+app.use(cors()); // erlaubt alle Domains; ggf. anpassen
 app.use(express.json());
 
-/* ========================================================
-   BAUER REGISTER + LOGIN
-======================================================== */
+// ========================================================
+// BAUER REGISTER + LOGIN
+// ========================================================
 
 // REGISTER
 app.post("/api/register", async (req, res) => {
   const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username und Passwort erforderlich" });
+  }
+
   try {
     const hashed = await bcrypt.hash(password, 10);
     const bauer = await prisma.bauer.create({
       data: { username, password: hashed },
     });
-    res.json({ message: "Bauer registriert", bauer });
+    return res.json({ message: "Bauer registriert", bauer });
   } catch (err) {
-    res.status(400).json({ error: "Benutzername bereits vorhanden" });
+    console.error("Fehler beim Registrieren:", err);
+    return res.status(400).json({ error: "Benutzername bereits vorhanden" });
   }
 });
 
@@ -31,35 +39,50 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const bauer = await prisma.bauer.findUnique({ where: { username } });
-  if (!bauer) return res.status(404).json({ error: "Benutzer nicht gefunden" });
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username und Passwort erforderlich" });
+  }
 
-  const valid = await bcrypt.compare(password, bauer.password);
-  if (!valid) return res.status(401).json({ error: "Falsches Passwort" });
+  try {
+    const bauer = await prisma.bauer.findUnique({ where: { username } });
+    if (!bauer) return res.status(404).json({ error: "Benutzer nicht gefunden" });
 
-  res.json({ message: "Login erfolgreich", bauer });
+    const valid = await bcrypt.compare(password, bauer.password);
+    if (!valid) return res.status(401).json({ error: "Falsches Passwort" });
+
+    return res.json({ message: "Login erfolgreich", bauer });
+  } catch (err) {
+    console.error("Login Fehler:", err);
+    return res.status(500).json({ error: "Serverfehler" });
+  }
 });
 
-/* ========================================================
-   KATEGORIEN
-======================================================== */
-
-// Für Produkt-Formular (Dropdown)
+// ========================================================
+// KATEGORIEN
+// ========================================================
 app.get("/api/kategorien", async (req, res) => {
-  const kategorien = await prisma.kategorie.findMany();
-  res.json(kategorien);
+  try {
+    const kategorien = await prisma.kategorie.findMany();
+    return res.json(kategorien);
+  } catch (err) {
+    console.error("Fehler Kategorien:", err);
+    return res.status(500).json({ error: "Kategorien konnten nicht geladen werden" });
+  }
 });
 
-/* ========================================================
-   PRODUKTE CRUD
-======================================================== */
+// ========================================================
+// PRODUKTE CRUD
+// ========================================================
 
 // ALLE PRODUKTE
 app.get("/api/produkte", async (req, res) => {
-  const produkte = await prisma.produkt.findMany({
-    include: { kategorie: true },
-  });
-  res.json(produkte);
+  try {
+    const produkte = await prisma.produkt.findMany({ include: { kategorie: true } });
+    return res.json(produkte);
+  } catch (err) {
+    console.error("Fehler Produkte laden:", err);
+    return res.status(500).json({ error: "Produkte konnten nicht geladen werden" });
+  }
 });
 
 // PRODUKT ERSTELLEN
@@ -75,10 +98,10 @@ app.post("/api/produkte", async (req, res) => {
         kategorieId,
       },
     });
-    res.json(produkt);
+    return res.json(produkt);
   } catch (err) {
-    console.log(err);
-    res.status(400).json({ error: "Produkt konnte nicht erstellt werden" });
+    console.error("Fehler Produkt erstellen:", err);
+    return res.status(400).json({ error: "Produkt konnte nicht erstellt werden" });
   }
 });
 
@@ -87,175 +110,44 @@ app.patch("/api/produkte/:id", async (req, res) => {
   const { id } = req.params;
   const { name, beschreibung, preis, kategorieId } = req.body;
 
-  const produkt = await prisma.produkt.update({
-    where: { id },
-    data: {
-      name,
-      beschreibung,
-      preis: parseFloat(preis),
-      kategorieId,
-    },
-  });
-  res.json(produkt);
+  try {
+    const produkt = await prisma.produkt.update({
+      where: { id },
+      data: { name, beschreibung, preis: parseFloat(preis), kategorieId },
+    });
+    return res.json(produkt);
+  } catch (err) {
+    console.error("Fehler Produkt aktualisieren:", err);
+    return res.status(400).json({ error: "Produkt konnte nicht aktualisiert werden" });
+  }
 });
 
 // PRODUKT LÖSCHEN
 app.delete("/api/produkte/:id", async (req, res) => {
   const { id } = req.params;
 
-  await prisma.produkt.delete({ where: { id } });
-  res.json({ message: "Produkt gelöscht" });
-});
-
-/* ========================================================
-   KUNDEN CRUD
-======================================================== */
-
-// ALLE KUNDEN
-app.get("/api/kunden", async (req, res) => {
-  const kunden = await prisma.kunde.findMany();
-  res.json(kunden);
-});
-
-// KUNDE ERSTELLEN
-app.post("/api/kunden", async (req, res) => {
-  const { name, email } = req.body;
-
   try {
-    const kunde = await prisma.kunde.create({
-      data: { name, email },
-    });
-    res.json(kunde);
+    await prisma.produkt.delete({ where: { id } });
+    return res.json({ message: "Produkt gelöscht" });
   } catch (err) {
-    res.status(400).json({ error: "Email bereits vergeben" });
+    console.error("Fehler Produkt löschen:", err);
+    return res.status(400).json({ error: "Produkt konnte nicht gelöscht werden" });
   }
 });
 
-// KUNDE BEARBEITEN
-app.patch("/api/kunden/:id", async (req, res) => {
-  const { id } = req.params;
-  const { name, email } = req.body;
+// ========================================================
+// SERVER START
+// ========================================================
 
-  const kunde = await prisma.kunde.update({
-    where: { id },
-    data: { name, email },
-  });
-  res.json(kunde);
+const PORT = 3000;
+app.listen(PORT, () => console.log(`🚜 Server läuft auf http://localhost:${PORT}`));
+
+// Prisma sauber trennen bei Exit
+process.on("SIGINT", async () => {
+  await prisma.$disconnect();
+  process.exit();
 });
-
-// KUNDE LÖSCHEN
-app.delete("/api/kunden/:id", async (req, res) => {
-  const { id } = req.params;
-  await prisma.kunde.delete({ where: { id } });
-  res.json({ message: "Kunde gelöscht" });
+process.on("SIGTERM", async () => {
+  await prisma.$disconnect();
+  process.exit();
 });
-
-/* ========================================================
-   BESTELLUNGEN
-======================================================== */
-
-// BESTELLUNG ERSTELLEN
-app.post("/api/bestellungen", async (req, res) => {
-  const { kundeId, produkte } = req.body;
-
-  try {
-    // Gesamtpreis berechnen
-    let gesamtpreis = 0;
-
-    produkte.forEach((p) => {
-      gesamtpreis += p.menge * p.einzelpreis;
-    });
-
-    // Bestellung anlegen
-    const bestellung = await prisma.bestellung.create({
-      data: {
-        kundeId,
-        gesamtpreis,
-        bestellteProdukte: {
-          create: produkte.map((p) => ({
-            produktId: p.produktId,
-            menge: p.menge,
-            einzelpreis: p.einzelpreis,
-          })),
-        },
-      },
-      include: { bestellteProdukte: true },
-    });
-
-    res.json(bestellung);
-  } catch (err) {
-    console.log(err);
-    res.status(400).json({ error: "Bestellung konnte nicht erstellt werden" });
-  }
-});
-
-// ALLE BESTELLUNGEN (optional, falls benötigt)
-app.get("/api/bestellungen", async (req, res) => {
-  const bestellungen = await prisma.bestellung.findMany({
-    include: {
-      kunde: true,
-      bestellteProdukte: { include: { produkt: true } },
-    },
-  });
-  res.json(bestellungen);
-});
-
-/* ========================================================
-   STATISTIK
-======================================================== */
-
-// (1) KOMPLETTE STATISTIK FÜR ALLE PRODUKTE
-app.get("/api/statistik/produkte", async (req, res) => {
-  const grouped = await prisma.bestelltesProdukt.groupBy({
-    by: ["produktId"],
-    _sum: { menge: true },
-  });
-
-  const result = [];
-
-  for (let g of grouped) {
-    const produkt = await prisma.produkt.findUnique({
-      where: { id: g.produktId },
-    });
-
-    result.push({
-      produkt: produkt.name,
-      anzahl: g._sum.menge,
-    });
-  }
-
-  // Sortieren: meist verkauft -> oben
-  result.sort((a, b) => b.anzahl - a.anzahl);
-
-  res.json(result);
-});
-
-// (2) MEISTVERKAUFTES PRODUKT
-app.get("/api/statistik/meistverkauft", async (req, res) => {
-  const result = await prisma.bestelltesProdukt.groupBy({
-    by: ["produktId"],
-    _sum: { menge: true },
-    orderBy: { _sum: { menge: "desc" } },
-    take: 1,
-  });
-
-  if (result.length === 0)
-    return res.json({ message: "Keine Verkäufe vorhanden" });
-
-  const produkt = await prisma.produkt.findUnique({
-    where: { id: result[0].produktId },
-  });
-
-  res.json({
-    produkt,
-    verkauft: result[0]._sum.menge,
-  });
-});
-
-/* ========================================================
-   SERVER START
-======================================================== */
-
-app.listen(3000, () =>
-  console.log("🚜 Server läuft auf http://localhost:3000")
-);

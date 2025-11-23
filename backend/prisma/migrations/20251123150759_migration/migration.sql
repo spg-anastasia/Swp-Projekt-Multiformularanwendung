@@ -52,6 +52,12 @@ CREATE TABLE "BestelltesProdukt" (
 CREATE UNIQUE INDEX "Bauer_username_key" ON "Bauer"("username");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Kategorie_name_key" ON "Kategorie"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Produkt_name_key" ON "Produkt"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Kunde_email_key" ON "Kunde"("email");
 
 -- CreateIndex
