@@ -33,7 +33,7 @@ loginForm.addEventListener("submit", async (e) => {
   const result = await res.json();
   if(res.ok) {
     localStorage.setItem("bauer", JSON.stringify(result.bauer));
-    window.location.href = "startseite.html";
+    window.location.href = "test.html";
   } else {
     alert(result.error);
   }
