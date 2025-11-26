@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bestellverwaltung</title>
+  <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+  <a href="hauptseite.html" class="menuButton">Menü</a>
+  <header><h1>Bestellungen</h1></header>
+
+  <section id="bestellungenContainer">Lade Bestellungen …</section>
+  <div id="error" style="color:crimson;margin-top:1rem;"></div>
+
+<script>
+async function loadBestellungen() {
+  const container = document.getElementById("bestellungenContainer");
+  const errorEl = document.getElementById("error");
+
+  container.textContent = "Lade Bestellungen …";
+  errorEl.textContent = "";
+
+  try {
+    const [resB, resK, resP] = await Promise.all([
+      fetch("http://localhost:3000/api/bestellungen"),
+      fetch("http://localhost:3000/api/kunden"),
+      fetch("http://localhost:3000/api/produkte")
+    ]);
+
+    if (!resB.ok || !resK.ok || !resP.ok) {
+      throw new Error("Fehler beim Laden von Bestellungen, Kunden oder Produkten.");
+    }
+
+    const bestellungen = await resB.json();
+    const kunden = await resK.json();
+    const produkte = await resP.json();
+
+    if (!Array.isArray(bestellungen) || bestellungen.length === 0) {
+      container.innerHTML = "<p>Keine Bestellungen vorhanden.</p>";
+      return;
+    }
+
+    const table = document.createElement("table");
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Bestellnummer</th>
+          <th>Kunde</th>
+          <th>Produkt</th>
+          <th>Menge</th>
+          <th>Gesamtpreis (€)</th>
+          <th>Datum</th>
+        </tr>
+      </thead>
+    `;
+    const tbody = document.createElement("tbody");
+
+    bestellungen.forEach(b => {
+      const kunde = kunden.find(k => k.id === b.kundeId);
+      const produkt = produkte.find(p => p.id === b.produktId);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${b.id}</td>
+        <td>${kunde ? kunde.name : "?"}</td>
+        <td>${produkt ? produkt.name : "?"}</td>
+        <td>${b.menge}</td>
+        <td>${(b.menge * (produkt?.preis || 0)).toFixed(2)}</td>
+        <td>${new Date(b.datum).toLocaleDateString()}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    container.innerHTML = "";
+    container.appendChild(table);
+
+  } catch (err) {
+    console.error(err);
+    errorEl.textContent = err.message || "Fehler beim Laden";
+  }
+}
+
+window.addEventListener("load", loadBestellungen);
+</script>
+
+</body>
+</html>

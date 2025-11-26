@@ -6,7 +6,9 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header id="siteHeader">Bauernhof-Shop</header>
+    <header id="siteHeader">Bauernhof-Shop
+      <button id="logoutBtn">Abmelden</button>
+    </header>
 
     <div id="startseite">
       <h2 id="welcomeLine">Willkommen</h2>
@@ -17,6 +19,7 @@
           <a href="Kundenverwaltung.html">Kunde erstellen</a>
           <a href="Bestellung.html">Bestellung erfassen</a>
           <a href="Statistik.html">Produktstatistik</a>
+          <a href="bestellungAnzeigen.html">Bestellungen anzeigen</a>
       </div>
     </div>
     <div id="animals">🐄 🐖 🐑 🐓 🐐 🌳</div>
@@ -49,5 +52,14 @@
         welcomeEl.textContent = 'Willkommen, ' + escapeHtml(username);
       });
     </script>
+    <script>
+  const logoutBtn = document.getElementById('logoutBtn');
+  logoutBtn.addEventListener('click', () => {
+    // Login-Daten entfernen, ohne die Datenbank zu löschen
+    localStorage.removeItem('bauer'); // nur die aktuelle Sitzung zurücksetzen
+    // Weiterleitung zur Startseite
+    window.location.href = 'ersteSeite.html';
+  });
+</script>
 </body>
 </html>
