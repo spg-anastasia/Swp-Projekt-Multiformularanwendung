@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("@prisma/client");
+const path = require("path");
 
 const prisma = new PrismaClient();
 const app = express();
@@ -11,6 +12,19 @@ const app = express();
 app.use(cors()); // erlaubt alle Domains; ggf. anpassen
 app.use(express.json());
 
+// static frontend ausliefern
+const frontendDir = path.resolve(__dirname, "../../frontend");
+app.use(express.static(frontendDir));
+
+// Optional: Root auf Registrieren.html zeigen
+app.get("/", (req, res) => res.sendFile(path.join(frontendDir, "Registrieren.html")));
+
+// Debug Logging
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.originalUrl);
+  next();
+});
+
 // ========================================================
 // BAUER REGISTER + LOGIN
 // ========================================================
@@ -18,7 +32,6 @@ app.use(express.json());
 // REGISTER
 app.post("/api/register", async (req, res) => {
   const { username, password } = req.body;
-
   if (!username || !password) {
     return res.status(400).json({ error: "Username und Passwort erforderlich" });
   }
@@ -28,10 +41,20 @@ app.post("/api/register", async (req, res) => {
     const bauer = await prisma.bauer.create({
       data: { username, password: hashed },
     });
-    return res.json({ message: "Bauer registriert", bauer });
+
+    // Entferne password aus der Antwort
+    const { password: _, ...safeBauer } = bauer;
+
+    // 201 Created
+    return res.status(201).json({ message: "Bauer registriert", bauer: safeBauer });
   } catch (err) {
     console.error("Fehler beim Registrieren:", err);
-    return res.status(400).json({ error: "Benutzername bereits vorhanden" });
+
+    // Prisma unique constraint -> 409
+    if (err.code === "P2002") {
+      return res.status(409).json({ error: "Benutzername bereits vorhanden" });
+    }
+    return res.status(500).json({ error: "Serverfehler" });
   }
 });
 
