@@ -30,38 +30,17 @@ loginForm.addEventListener("submit", async (e) => {
     username: loginForm.username.value.trim(),
     password: loginForm.password.value.trim()
   };
-
-  if(!data.username || !data.password) {
-    alert("Bitte Benutzername und Passwort eingeben.");
-    return;
-  }
-
-  try {
-    const res = await fetch("http://localhost:3000/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    const text = await res.text();
-    let result;
-    try {
-      result = JSON.parse(text);
-    } catch {
-      result = { error: "Server hat kein JSON zurückgegeben" };
-    }
-
-    if(res.ok) {
-      alert("Login erfolgreich!");
-      // Hier kannst du weiterleiten oder Token speichern
-      // Beispiel: window.location.href = "dashboard.html";
-    } else {
-      alert(result.error || "Fehler beim Login");
-    }
-
-  } catch (err) {
-    console.error("Fehler beim Fetch:", err);
-    alert("Server konnte nicht erreicht werden.");
+  const res = await fetch("http://localhost:3000/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  if(res.ok) {
+    localStorage.setItem("bauer", JSON.stringify(result.bauer));
+    window.location.href = "startseite.html";
+  } else {
+    alert(result.error);
   }
 });
 </script>

@@ -7,16 +7,15 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-<h2>Willkommen im Bauern-Dashboard</h2>
+<div id="startseite">
+<h2>Willkommen im Bauern-Shop</h2>
+<h3>Bitte Registrieren oder Anmelden</h3>
 
 <nav>
-  <button onclick="location.href='Datenerfassung.html'">Produkt erfassen</button>
-  <button onclick="location.href='Produktverwaltung.html'">Produkte verwalten</button>
-  <button onclick="location.href='Kundenverwaltung.html'">Kunden verwalten</button>
-  <button onclick="location.href='Bestellung.html'">Bestellung erfassen</button>
-  <button onclick="location.href='Statistik.html'">Statistik</button>
+  <button onclick="location.href='Registrieren.html'">Registrieren</button>
+  <button onclick="location.href='Anmelden.html'">Anmelden</button>
 </nav>
+</div>
 
 <script>
 if(!localStorage.getItem("bauer")) {
