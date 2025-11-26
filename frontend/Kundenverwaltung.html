@@ -1,58 +1,104 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kundenverwaltung</title>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kundenverwaltung</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    table { width:100%; border-collapse:collapse; margin-top:1rem; }
+    th, td { padding:0.5rem; border:1px solid #ccc; text-align:left; }
+    th { background:#f4f4f4; }
+  </style>
 </head>
 <body>
-<h2>Kunden verwalten</h2>
-<form id="addCustomerForm">
-     <label for="name">Name:</label>
-  <input type="text" id="name" placeholder="Name" required>
-   <label for="email">Email:</label>
-  <input type="email" id="email" placeholder="E-Mail" required> 
-  <button type="submit">Hinzufügen</button>
-</form>
-<table id="customerTable">
-<thead><tr><th>Name</th><th>E-Mail</th><th>Aktionen</th></tr></thead>
-<tbody></tbody>
-</table>
+  <h2>Kundenverwaltung</h2>
+
+  <form id="kundeForm">
+    <label for="k-name">Name</label>
+    <input id="k-name" required />
+
+    <label for="k-email">E‑Mail</label>
+    <input id="k-email" type="email" required />
+
+    <button type="submit">Kunden hinzufügen</button>
+  </form>
+
+  <div id="kunde-msg" role="status" aria-live="polite"></div>
+
+  <h3>Vorhandene Kunden</h3>
+  <section id="kundenList">Lade…</section>
 
 <script>
-const tbody = document.querySelector("#customerTable tbody");
+const kForm = document.getElementById('kundeForm');
+const kMsg = document.getElementById('kunde-msg');
+const list = document.getElementById('kundenList');
 
-async function loadCustomers() {
-  const res = await fetch("http://localhost:3000/api/kunden");
-  const kunden = await res.json();
-  tbody.innerHTML = "";
-  kunden.forEach((k) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td>${k.name}</td><td>${k.email}</td>
-      <td><button onclick="deleteCustomer('${k.id}')">Löschen</button></td>`;
-    tbody.appendChild(row);
-  });
+async function loadKunden() {
+  list.textContent = 'Lade…';
+  try {
+    const res = await fetch('http://localhost:3000/api/kunden');
+    if (!res.ok) throw new Error('Fehler beim Laden der Kunden');
+    const daten = await res.json();
+    if (!Array.isArray(daten) || daten.length === 0) {
+      list.innerHTML = '<p>Keine Kunden gefunden.</p>';
+      return;
+    }
+    const table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>Name</th><th>E‑Mail</th></tr></thead>';
+    const tbody = document.createElement('tbody');
+    daten.forEach(k => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(k.name)}</td><td>${escapeHtml(k.email)}</td>`;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    list.innerHTML = '';
+    list.appendChild(table);
+  } catch (err) {
+    console.error(err);
+    list.textContent = err.message || 'Fehler';
+  }
 }
 
-async function deleteCustomer(id) {
-  await fetch(`http://localhost:3000/api/kunden/${id}`, { method: "DELETE" });
-  loadCustomers();
-}
-
-document.getElementById("addCustomerForm").addEventListener("submit", async e => {
+kForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const kunde = { name: name.value, email: email.value };
-  await fetch("http://localhost:3000/api/kunden", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(kunde)
-  });
-  e.target.reset();
-  loadCustomers();
+  kMsg.textContent = '';
+  const name = document.getElementById('k-name').value.trim();
+  const email = document.getElementById('k-email').value.trim();
+  if (!name || !email) {
+    kMsg.textContent = 'Bitte Name und E‑Mail angeben.';
+    return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:3000/api/kunden', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      kMsg.textContent = 'Kunde erfolgreich erstellt.';
+      kForm.reset();
+      await loadKunden();
+    } else {
+      kMsg.textContent = data.error || 'Fehler beim Erstellen des Kunden';
+      console.error('Kunden-Fehler:', data);
+    }
+  } catch (err) {
+    console.error(err);
+    kMsg.textContent = 'Server nicht erreichbar.';
+  }
 });
 
-loadCustomers();
+// helpers
+function escapeHtml(str) {
+  if (!str && str !== 0) return '';
+  return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+window.addEventListener('load', loadKunden);
 </script>
 </body>
 </html>

@@ -1,45 +1,243 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Produktverwaltung</title>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Produktverwaltung</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    table { width:100%; border-collapse:collapse; margin-top:1rem; }
+    th, td { padding:0.5rem; border:1px solid #ccc; text-align:left; }
+    th { background:#f4f4f4; }
+    .actions { text-align:center; white-space:nowrap; }
+    .small-btn { margin-left:0.25rem; padding:0.25rem 0.5rem; }
+    .edit-row input, .edit-row select { width: 100%; box-sizing: border-box; }
+  </style>
 </head>
 <body>
-<h2>Produkte verwalten</h2>
-<table id="productTable">
-  <thead>
-    <tr><th>Name</th><th>Preis</th><th>Aktionen</th></tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <header>
+    <h1>Produktverwaltung</h1>
+  </header>
+
+  <main>
+    <div style="margin-bottom:1rem;">
+      <button id="addProductBtn">Produkt hinzufügen</button>
+    </div>
+
+    <section id="produkteSection" aria-live="polite">
+      <p id="loading">Lade Produkte …</p>
+    </section>
+
+    <div id="error" style="color:crimson;"></div>
+  </main>
 
 <script>
-const tbody = document.querySelector("#productTable tbody");
+  const section = document.getElementById('produkteSection');
+  const errEl = document.getElementById('error');
+  const addBtn = document.getElementById('addProductBtn');
 
-async function loadProducts() {
-  const res = await fetch("http://localhost:3000/api/produkte");
-  const products = await res.json();
-  tbody.innerHTML = "";
-  products.forEach(p => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${p.name}</td>
-      <td>${p.preis.toFixed(2)}</td>
-      <td>
-        <button onclick="deleteProduct('${p.id}')">Löschen</button>
-      </td>`;
-    tbody.appendChild(row);
+  addBtn.addEventListener('click', () => {
+    window.location.href = 'Datenerfassung.html';
   });
-}
 
-async function deleteProduct(id) {
-  await fetch(`http://localhost:3000/api/produkte/${id}`, { method: "DELETE" });
-  loadProducts();
-}
+  let categories = [];
 
-loadProducts();
+  async function loadProdukte() {
+    errEl.textContent = '';
+    section.innerHTML = '<p id="loading">Lade Produkte …</p>';
+    try {
+      // parallel: produkte + kategorien
+      const [resP, resC] = await Promise.all([
+        fetch('http://localhost:3000/api/produkte'),
+        fetch('http://localhost:3000/api/kategorien')
+      ]);
+
+      if (!resP.ok) {
+        const err = await resP.json().catch(() => ({}));
+        throw new Error(err.error || 'Fehler beim Laden der Produkte');
+      }
+      if (!resC.ok) {
+        const err = await resC.json().catch(() => ({}));
+        throw new Error(err.error || 'Fehler beim Laden der Kategorien');
+      }
+
+      const produkte = await resP.json();
+      categories = await resC.json();
+
+      if (!Array.isArray(produkte) || produkte.length === 0) {
+        section.innerHTML = '<p>Keine Produkte gefunden.</p>';
+        return;
+      }
+
+      // Tabelle bauen
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Beschreibung</th>
+            <th>Kategorie</th>
+            <th>Preis (€)</th>
+            <th class="actions">Aktionen</th>
+          </tr>
+        </thead>
+      `;
+      const tbody = document.createElement('tbody');
+
+      produkte.forEach(p => {
+        const kategorieName = p.kategorie?.name || '—';
+        const tr = document.createElement('tr');
+        tr.dataset.id = p.id;
+        tr.innerHTML = `
+          <td class="cell-name">${escapeHtml(p.name)}</td>
+          <td class="cell-beschreibung">${escapeHtml(p.beschreibung)}</td>
+          <td class="cell-kategorie">${escapeHtml(kategorieName)}</td>
+          <td class="cell-preis">${Number(p.preis).toFixed(2)}</td>
+          <td class="actions">
+            <button class="edit small-btn">Bearbeiten</button>
+            <button class="delete small-btn">Löschen</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      section.innerHTML = '';
+      section.appendChild(table);
+
+      // Events für Edit/Delete
+      tbody.querySelectorAll('.delete').forEach(btn => btn.addEventListener('click', onDelete));
+      tbody.querySelectorAll('.edit').forEach(btn => btn.addEventListener('click', onEdit));
+    } catch (e) {
+      console.error(e);
+      errEl.textContent = e.message || 'Fehler beim Laden';
+      section.innerHTML = '';
+    }
+  }
+
+  async function onDelete(e) {
+    const tr = e.target.closest('tr');
+    const id = tr.dataset.id;
+    if (!confirm('Produkt wirklich löschen?')) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/produkte/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Löschfehler');
+      }
+      tr.remove();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Fehler beim Löschen');
+    }
+  }
+
+  function createCategorySelect(selectedId) {
+    const select = document.createElement('select');
+    select.className = 'edit-category';
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = 'Bitte wählen';
+    select.appendChild(empty);
+    categories.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      if (c.id === selectedId) opt.selected = true;
+      select.appendChild(opt);
+    });
+    return select;
+  }
+
+  function onEdit(e) {
+    const tr = e.target.closest('tr');
+    if (tr.classList.contains('edit-row')) return;
+    tr.classList.add('edit-row');
+
+    const id = tr.dataset.id;
+    const nameCell = tr.querySelector('.cell-name');
+    const beschCell = tr.querySelector('.cell-beschreibung');
+    const katCell = tr.querySelector('.cell-kategorie');
+    const preisCell = tr.querySelector('.cell-preis');
+    const actionsCell = tr.querySelector('.actions');
+
+    const curName = nameCell.textContent.trim();
+    const curBesch = beschCell.textContent.trim();
+    const curKatName = katCell.textContent.trim();
+    const curPreis = preisCell.textContent.trim();
+
+    // Werte: find category id from categories by name
+    const curKat = categories.find(c => c.name === curKatName);
+    nameCell.innerHTML = `<input class="edit-name" value="${escapeAttr(curName)}">`;
+    beschCell.innerHTML = `<input class="edit-beschreibung" value="${escapeAttr(curBesch)}">`;
+    katCell.innerHTML = '';
+    katCell.appendChild(createCategorySelect(curKat?.id));
+    preisCell.innerHTML = `<input class="edit-preis" type="number" step="0.01" value="${Number(curPreis).toFixed(2)}">`;
+
+    actionsCell.innerHTML = `
+      <button class="save small-btn">Speichern</button>
+      <button class="cancel small-btn">Abbrechen</button>
+    `;
+
+    actionsCell.querySelector('.cancel').addEventListener('click', () => {
+      tr.classList.remove('edit-row');
+      nameCell.textContent = curName;
+      beschCell.textContent = curBesch;
+      katCell.textContent = curKatName || '—';
+      preisCell.textContent = curPreis;
+      actionsCell.innerHTML = `<button class="edit small-btn">Bearbeiten</button><button class="delete small-btn">Löschen</button>`;
+      actionsCell.querySelector('.edit').addEventListener('click', onEdit);
+      actionsCell.querySelector('.delete').addEventListener('click', onDelete);
+    });
+
+    actionsCell.querySelector('.save').addEventListener('click', async () => {
+      const newName = tr.querySelector('.edit-name').value.trim();
+      const newBesch = tr.querySelector('.edit-beschreibung').value.trim();
+      const newKatId = tr.querySelector('.edit-category').value;
+      const newPreis = parseFloat(tr.querySelector('.edit-preis').value);
+
+      if (!newName || !newBesch || isNaN(newPreis) || !newKatId) {
+        alert('Alle Felder ausfüllen.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/produkte/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newName, beschreibung: newBesch, preis: newPreis, kategorieId: newKatId })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || 'Fehler beim Speichern');
+        }
+
+        // wiederherstellen UI mit neuen Werten
+        nameCell.textContent = data.name || newName;
+        beschCell.textContent = data.beschreibung || newBesch;
+        katCell.textContent = data.kategorie?.name || categories.find(c => c.id === newKatId)?.name || '—';
+        preisCell.textContent = Number(data.preis ?? newPreis).toFixed(2);
+
+        actionsCell.innerHTML = `<button class="edit small-btn">Bearbeiten</button><button class="delete small-btn">Löschen</button>`;
+        actionsCell.querySelector('.edit').addEventListener('click', onEdit);
+        actionsCell.querySelector('.delete').addEventListener('click', onDelete);
+        tr.classList.remove('edit-row');
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'Fehler beim Speichern');
+      }
+    });
+  }
+
+  // kleine Escapes
+  function escapeHtml(str) {
+    if (!str && str !== 0) return '';
+    return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function escapeAttr(s) { return (s||'').replace(/"/g, '&quot;'); }
+
+  window.addEventListener('load', loadProdukte);
 </script>
 </body>
 </html>

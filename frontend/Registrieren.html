@@ -17,7 +17,7 @@
     <input type="password" id="password" name="password" placeholder="Passwort" required>
 
     <button type="submit">Registrieren</button>
-    <button type="button" onclick="location.href='Anmelden.html'">Anmelden</button>
+    <button type="button" onclick="location.href='anmelden.html'">Anmelden</button>
   </form>
 
 <script>
@@ -34,44 +34,25 @@ registerForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  const data = { username, password };
-
   try {
     const res = await fetch("http://localhost:3000/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ username, password })
     });
 
-    // Debug-Infos
-    console.log("Status:", res.status, res.statusText);
-    const contentType = res.headers.get("content-type") || "";
-    console.log("Content-Type:", contentType);
-
-    const text = await res.text();
-    console.log("Antwort (raw):", text);
-
-    let result;
-    if (contentType.includes("application/json")) {
-      try {
-        result = JSON.parse(text);
-      } catch (err) {
-        console.warn("Ungültiges JSON:", err);
-        result = { error: "Ungültiges JSON vom Server", raw: text };
-      }
-    } else {
-      result = { error: "Server hat kein JSON zurückgegeben", raw: text };
-    }
+    const result = await res.json().catch(() => ({ error: "Ungültige Serverantwort" }));
 
     if (res.ok) {
-      alert("Registrierung erfolgreich!");
-      window.location.href = "Anmelden.html";
+      // Direkt anmelden: sicheren Benutzer lokal speichern
+      localStorage.setItem("bauer", JSON.stringify(result.bauer || { username }));
+      window.location.href = "hauptseite.html";
     } else {
       alert(result.error || "Fehler bei der Registrierung");
     }
   } catch (err) {
-    console.error("Fehler beim Fetch:", err);
-    alert("Server konnte nicht erreicht werden.");
+    console.error(err);
+    alert("Server nicht erreichbar.");
   }
 });
 </script>

@@ -6,32 +6,47 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>Bauernhof-Shop</header>
+    <header id="siteHeader">Bauernhof-Shop</header>
 
     <div id="startseite">
-      <h2>Willkommen im Bauernhof-Shop</h2>
-      <p>Hier finden Sie frische Produkte vom Bauernhof.</p>
+      <h2 id="welcomeLine">Willkommen</h2>
+      <p id="intro">Hier finden Sie frische Produkte vom Bauernhof.</p>
 
       <div class="nav">
-          <a href="Datenerfassung.html">Produktdaten</a>
           <a href="Produktverwaltung.html">Produktverwaltung</a>
-          <a href="Kundenverwaltung.html">Kundenverwaltung</a>
-          <a href="Statistik.html">Statistik</a>
+          <a href="Kundenverwaltung.html">Kunde erstellen</a>
+          <a href="Bestellung.html">Bestellung erfassen</a>
+          <a href="Statistik.html">Produktstatistik</a>
       </div>
     </div>
     <div id="animals">🐄 🐖 🐑 🐓 🐐 🌳</div>
 
-
     <script>
-      window.addEventListener('load', () => {
-        // Prüfen, ob Token vorhanden ist
-        const token = localStorage.getItem('token');
+      function escapeHtml(str) {
+        if (!str && str !== 0) return '';
+        return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+      }
 
-        if (!token) {
-          // Kein Token -> zurück zur Login-Seite
-          alert("Bitte zuerst anmelden!");
-          window.location.href = "login.html";
+      window.addEventListener('load', () => {
+        // Prüfen, ob Benutzer lokal vorhanden ist
+        const stored = localStorage.getItem('bauer');
+        if (!stored) {
+          // kein Login -> zurück zur Anmelden-Seite
+          window.location.href = "anmelden.html";
+          return;
         }
+
+        // lokal gespeicherten Benutzer auslesen
+        let user;
+        try {
+          user = JSON.parse(stored);
+        } catch {
+          user = stored;
+        }
+
+        const username = (user && (user.username || user.name)) ? (user.username || user.name) : String(user);
+        const welcomeEl = document.getElementById('welcomeLine');
+        welcomeEl.textContent = 'Willkommen, ' + escapeHtml(username);
       });
     </script>
 </body>

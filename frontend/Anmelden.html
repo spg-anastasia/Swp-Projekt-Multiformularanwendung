@@ -11,13 +11,13 @@
     <h2>Anmelden</h2>
 
     <label for="username">Benutzername:</label>
-    <input type="text" id="username" placeholder="Benutzername" required>
+    <input type="text" id="username" name="username" placeholder="Benutzername" required>
 
     <label for="password">Passwort:</label>
-    <input type="password" id="password" placeholder="Passwort" required>
+    <input type="password" id="password" name="password" placeholder="Passwort" required>
 
     <button type="submit">Anmelden</button>
-    <button type="button" onclick="location.href='Registrieren.html'">Registrieren</button>
+    <button type="button" onclick="location.href='registrieren.html'">Registrieren</button>
   </form>
 
 <script>
@@ -26,21 +26,33 @@ const loginForm = document.getElementById("loginForm");
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const data = {
-    username: loginForm.username.value.trim(),
-    password: loginForm.password.value.trim()
-  };
-  const res = await fetch("http://localhost:3000/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  const result = await res.json();
-  if(res.ok) {
-    localStorage.setItem("bauer", JSON.stringify(result.bauer));
-    window.location.href = "startseite.html";
-  } else {
-    alert(result.error);
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if(!username || !password) {
+    alert("Bitte Benutzername und Passwort eingeben.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    const result = await res.json().catch(() => ({ error: "Ungültige Serverantwort" }));
+
+    if (res.ok) {
+      // Speichere Benutzer lokal statt Token
+      localStorage.setItem("bauer", JSON.stringify(result.bauer || { username }));
+      window.location.href = "hauptseite.html";
+    } else {
+      alert(result.error || "Fehler beim Anmelden");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server nicht erreichbar.");
   }
 });
 </script>

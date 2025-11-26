@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Statistik</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    table { width:100%; border-collapse:collapse; margin-top:1rem; }
+    th, td { padding:0.5rem; border:1px solid #ccc; text-align:left; }
+    th { background:#f4f4f4; }
+    td.num { text-align:right; }
+  </style>
 </head>
 <body>
 
@@ -12,24 +18,45 @@
 
 <table id="statsTable">
   <thead>
-    <tr><th>Produkt</th><th>Anzahl Bestellungen</th></tr>
+    <tr>
+      <th>Produkt</th>
+      <th>Gesamtmenge bestellt</th>
+    </tr>
   </thead>
   <tbody></tbody>
 </table>
 
 <script>
 async function loadStats() {
-  const res = await fetch("http://localhost:3000/api/statistik/produkte");
-  const stats = await res.json();
+  try {
+    const res = await fetch("http://localhost:3000/api/statistik/produkte");
+    if (!res.ok) throw new Error("Statistik konnte nicht geladen werden");
+    const stats = await res.json();
 
-  const tbody = document.querySelector("#statsTable tbody");
-  tbody.innerHTML = "";
+    const tbody = document.querySelector("#statsTable tbody");
+    tbody.innerHTML = "";
 
-  stats.forEach(s => {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td>${s.produkt}</td><td>${s.anzahl}</td>`;
-    tbody.appendChild(row);
-  });
+    if (!Array.isArray(stats) || stats.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='2'>Keine Bestelldaten vorhanden.</td></tr>";
+      return;
+    }
+
+    stats.forEach(s => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${escapeHtml(s.produkt)}</td>
+                       <td class="num">${Number(s.gesamtMenge).toFixed(0)}</td>`;
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error(err);
+    const tbody = document.querySelector("#statsTable tbody");
+    tbody.innerHTML = `<tr><td colspan="2">Fehler: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str && str !== 0) return "";
+  return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
 loadStats();
@@ -38,5 +65,5 @@ loadStats();
 </body>
 </html>
 
-   
-  
+
+

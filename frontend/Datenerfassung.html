@@ -15,57 +15,101 @@
   <input type="text" id="name" placeholder="Produktname" required>
 
   <label for="beschreibung">Beschreibung:</label>
-  <input type="text" id="beschreibung" placeholder="Beschreibung">
+  <input type="text" id="beschreibung" placeholder="Beschreibung" required>
 
   <label for="preis">Preis (€):</label>
-  <input type="number" id="preis" placeholder="Preis" required>
+  <input type="number" id="preis" placeholder="Preis" step="0.01" required>
 
   <label for="kategorie">Kategorie:</label>
   <select id="kategorie" required>
-    <option value="">Kategorie wählen</option>
-    <option value="1">Gemüse</option>
-    <option value="2">Obst</option>
-    <option value="3">Milchprodukte</option>
-    <option value="4">Getreide</option>
-    <option value="5">Fleisch</option>
+    <option value="">Bitte Kategorie wählen</option>
   </select>
+  <div id="kategorie-hinweis" style="color:#b00;margin-top:0.5rem;"></div>
 
-  <button type="submit">Speichern</button>
+  <button type="submit" id="saveBtn">Speichern</button>
 </form>
 
 <script>
 async function loadCategories() {
-  const res = await fetch("http://localhost:3000/api/kategorien"); // Backend muss Endpoint haben
-  const categories = await res.json();
   const select = document.getElementById("kategorie");
-  categories.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat.id;
-    option.textContent = cat.name;
-    select.appendChild(option);
-  });
+  const hint = document.getElementById("kategorie-hinweis");
+  const saveBtn = document.getElementById("saveBtn");
+
+  select.innerHTML = '<option value="">Bitte Kategorie wählen</option>';
+  hint.textContent = '';
+  saveBtn.disabled = true;
+
+  try {
+    const res = await fetch("http://localhost:3000/api/kategorien");
+    if (!res.ok) throw new Error("Kategorien konnten nicht geladen werden");
+    const categories = await res.json();
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      hint.textContent = "Keine Kategorien in der Datenbank vorhanden. Bitte zuerst Kategorien anlegen.";
+      return;
+    }
+
+    categories.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = String(cat.id);
+      option.textContent = cat.name;
+      select.appendChild(option);
+    });
+
+    saveBtn.disabled = false;
+  } catch (err) {
+    console.error("Fehler beim Laden der Kategorien:", err);
+    hint.textContent = "Fehler beim Laden der Kategorien — Server prüfen.";
+  }
 }
 
 document.getElementById("productForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const produkt = {
-    name: name.value,
-    beschreibung: beschreibung.value,
-    preis: parseFloat(preis.value),
-    kategorieId: kategorie.value
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.disabled = true;
+
+  const nameEl = document.getElementById("name");
+  const beschreibungEl = document.getElementById("beschreibung");
+  const preisEl = document.getElementById("preis");
+  const kategorieEl = document.getElementById("kategorie");
+
+  const payload = {
+    name: nameEl.value.trim(),
+    beschreibung: beschreibungEl.value.trim(),
+    preis: parseFloat(preisEl.value),
+    kategorieId: kategorieEl.value
   };
-  const res = await fetch("http://localhost:3000/api/produkte", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(produkt)
-  });
-  const result = await res.json();
-  alert("Produkt gespeichert: " + result.name);
-  e.target.reset();
+
+  // einfache Validierung
+  if (!payload.name || !payload.beschreibung || isNaN(payload.preis) || !payload.kategorieId) {
+    alert("Bitte alle Felder korrekt ausfüllen.");
+    saveBtn.disabled = false;
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/api/produkte", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      alert("Produkt gespeichert: " + (result.name || payload.name));
+      // zurück zur Produktübersicht
+      window.location.href = "Produktverwaltung.html";
+    } else {
+      alert(result.error || "Fehler beim Speichern des Produkts");
+      saveBtn.disabled = false;
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server nicht erreichbar.");
+    saveBtn.disabled = false;
+  }
 });
 
-// Kategorien beim Laden der Seite abrufen
-loadCategories();
+window.addEventListener('load', loadCategories);
 </script>
 
 </body>
