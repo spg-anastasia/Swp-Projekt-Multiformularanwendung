@@ -136,18 +136,18 @@ table {
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-th, td {
+table th, td {
   padding: 12px;
   border-bottom: 1px solid #e0e0e0;
   text-align: left;
 }
 
-th {
+table th {
   background-color: #7fbf4d;
   color: white;
 }
 
-tr:hover {
+table tr:hover {
   background-color: #d8f5a2;
 }
 
