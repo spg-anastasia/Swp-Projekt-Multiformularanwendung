@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Anmeldeformular: Benutzer gibt Benutzername und Passwort ein, Login-Request an Backend gesendet--> 
   <form id="loginForm">
     <h2>Anmelden</h2>
 
@@ -21,8 +22,10 @@
   </form>
 
 <script>
+// Referenz auf das Formular
 const loginForm = document.getElementById("loginForm");
 
+// Formular-Submit: Eingaben validieren und Login-Request senden
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -35,6 +38,7 @@ loginForm.addEventListener("submit", async (e) => {
   }
 
   try {
+    // Anfrage an API senden
     const res = await fetch("http://localhost:3000/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,10 +48,11 @@ loginForm.addEventListener("submit", async (e) => {
     const result = await res.json().catch(() => ({ error: "Ungültige Serverantwort" }));
 
     if (res.ok) {
-      // Speichere Benutzer lokal statt Token
+      // Login erfolgreich: Benutzer lokal speichern und weiterleiten
       localStorage.setItem("bauer", JSON.stringify(result.bauer || { username }));
       window.location.href = "hauptseite.html";
     } else {
+      // API meldet Fehler
       alert(result.error || "Fehler beim Anmelden");
     }
   } catch (err) {

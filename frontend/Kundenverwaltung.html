@@ -33,11 +33,13 @@
   <section id="kundenList">Lade…</section>
 
 <script>
+// Formular- und UI-Elemente
 const kForm = document.getElementById('kundeForm');
 const kMsg = document.getElementById('kunde-msg');
 const list = document.getElementById('kundenList');
 
 async function loadKunden() {
+  // Lade Kundenliste vom Backend
   list.textContent = 'Lade…';
   try {
     const res = await fetch('http://localhost:3000/api/kunden');
@@ -65,6 +67,7 @@ async function loadKunden() {
 }
 
 kForm.addEventListener('submit', async (e) => {
+  // Erstelle neuen Kunden mit API
   e.preventDefault();
   kMsg.textContent = '';
   const name = document.getElementById('k-name').value.trim();

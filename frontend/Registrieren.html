@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Registrierungsformular: erstellt neuen Benutzer via API und loggt nach Erfolg ein -->
   <form id="registerForm">
     <h2>Registrieren</h2>
 
@@ -21,8 +22,10 @@
   </form>
 
 <script>
+// Formular-Referenz
 const registerForm = document.getElementById("registerForm");
 
+// Behandle Registrierung: einfache Validierung und POST an API
 registerForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -35,6 +38,7 @@ registerForm.addEventListener("submit", async (e) => {
   }
 
   try {
+    // Sende Registrierungsdaten an Backend
     const res = await fetch("http://localhost:3000/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,10 +48,11 @@ registerForm.addEventListener("submit", async (e) => {
     const result = await res.json().catch(() => ({ error: "Ungültige Serverantwort" }));
 
     if (res.ok) {
-      // Direkt anmelden: sicheren Benutzer lokal speichern
+      // Registrierung erfolgreich: lokal speichern und zur Hauptseite
       localStorage.setItem("bauer", JSON.stringify(result.bauer || { username }));
       window.location.href = "hauptseite.html";
     } else {
+      // Fehler vom Server anzeigen
       alert(result.error || "Fehler bei der Registrierung");
     }
   } catch (err) {

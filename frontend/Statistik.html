@@ -13,6 +13,7 @@
   </style>
 </head>
 <body>
+<!-- Statistikseite: zeigt aggregierte Bestelldaten an -->
 <a href="hauptseite.html" class="menuButton">Menü</a>
 <header>
   <h1>Produkt-Statistik</h1>
@@ -31,6 +32,7 @@
 <script>
 async function loadStats() {
   try {
+    // Anfrage an Statistik-Endpunkt
     const res = await fetch("http://localhost:3000/api/statistik/produkte");
     if (!res.ok) throw new Error("Statistik konnte nicht geladen werden");
     const stats = await res.json();
@@ -38,11 +40,13 @@ async function loadStats() {
     const tbody = document.querySelector("#statsTable tbody");
     tbody.innerHTML = "";
 
+    // Keine Daten -> Hinweis anzeigen
     if (!Array.isArray(stats) || stats.length === 0) {
       tbody.innerHTML = "<tr><td colspan='2'>Keine Bestelldaten vorhanden.</td></tr>";
       return;
     }
 
+    // Statistik-Zeilen erzeugen
     stats.forEach(s => {
       const row = document.createElement("tr");
       row.innerHTML = `<td>${escapeHtml(s.produkt)}</td>

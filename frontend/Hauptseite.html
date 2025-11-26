@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Hauptseite: Begrüßung, Navigation und Abmelden -->
     <header id="siteHeader">Bauernhof-Shop
       <button id="logoutBtn">Abmelden</button>
     </header>
@@ -25,21 +26,22 @@
     <div id="animals">🐄 🐖 🐑 🐓 🐐 🌳</div>
 
     <script>
+      // kleine HTML-Escaper-Hilfe
       function escapeHtml(str) {
         if (!str && str !== 0) return '';
         return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
       }
 
+      // Beim Laden: prüfen ob ein Benutzer lokal gespeichert ist und Namen anzeigen
       window.addEventListener('load', () => {
-        // Prüfen, ob Benutzer lokal vorhanden ist
         const stored = localStorage.getItem('bauer');
         if (!stored) {
-          // kein Login -> zurück zur Anmelden-Seite
+          // kein eingeloggter Nutzer -> Anmeldeseite
           window.location.href = "anmelden.html";
           return;
         }
 
-        // lokal gespeicherten Benutzer auslesen
+        // gespeicherten Benutzer parsen (falls JSON) und anzeigen
         let user;
         try {
           user = JSON.parse(stored);
@@ -55,10 +57,9 @@
     <script>
   const logoutBtn = document.getElementById('logoutBtn');
   logoutBtn.addEventListener('click', () => {
-    // Login-Daten entfernen, ohne die Datenbank zu löschen
-    localStorage.removeItem('bauer'); // nur die aktuelle Sitzung zurücksetzen
-    // Weiterleitung zur Startseite
-    window.location.href = 'ersteSeite.html';
+        // Abmelden: Sitzung löschen und zur Start-/Anmeldeseite
+        localStorage.removeItem('bauer'); // Löscht nur lokale Sitzung
+        window.location.href = 'ersteSeite.html';
   });
 </script>
 </body>

@@ -9,6 +9,7 @@
 </head>
 
 <body>
+  <!-- Übersicht: listet Bestellungen mit zugehörigen Kunden & Produkten auf -->
   <a href="hauptseite.html" class="menuButton">Menü</a>
   <header><h1>Bestellungen</h1></header>
 
@@ -30,6 +31,7 @@ async function loadBestellungen() {
       fetch("http://localhost:3000/api/produkte")
     ]);
 
+    // Sicherstellen, dass alle drei geladen wurden
     if (!resB.ok || !resK.ok || !resP.ok) {
       throw new Error("Fehler beim Laden von Bestellungen, Kunden oder Produkten.");
     }
@@ -38,6 +40,7 @@ async function loadBestellungen() {
     const kunden = await resK.json();
     const produkte = await resP.json();
 
+    // Keine Bestellungen vorhanden -> Hinweis anzeigen
     if (!Array.isArray(bestellungen) || bestellungen.length === 0) {
       container.innerHTML = "<p>Keine Bestellungen vorhanden.</p>";
       return;

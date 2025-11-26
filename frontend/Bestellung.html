@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<!-- Seite zum Erfassen von Bestellungen: Kunde, Produkte und Warenkorb -->
 <a href="hauptseite.html" class="menuButton">Menü</a>
 <header>
   <h1>Bestellung erfassen</h1>
@@ -61,6 +62,7 @@ async function loadData() {
       kundeSelect.innerHTML = '<option value="">Keine Kunden</option>';
     }
   } catch (err) {
+    // Fehler beim Laden der Kunden anzeigen
     console.error("Kunden laden fehler:", err);
     kundeSelect.innerHTML = '<option value="">Fehler</option>';
   }
@@ -81,6 +83,7 @@ async function loadData() {
       produktSelect.innerHTML = '<option value="">Keine Produkte</option>';
     }
   } catch (err) {
+    // Fehler beim Laden der Produkte
     console.error("Produkte laden fehler:", err);
     produktSelect.innerHTML = '<option value="">Fehler</option>';
   }
@@ -134,6 +137,7 @@ function renderTable() {
 }
 
 document.getElementById("saveOrderBtn").onclick = async () => {
+  // Validierung: Warenkorb + Kunde
   if (warenkorb.length === 0) return alert("Keine Produkte hinzugefügt!");
   if (!kundeSelect.value) return alert("Bitte Kunde auswählen!");
 
@@ -153,6 +157,7 @@ document.getElementById("saveOrderBtn").onclick = async () => {
       body: JSON.stringify(bestellung)
     });
 
+    // Anfrage an API: Bestellung speichern
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Serverfehler beim Speichern der Bestellung");
