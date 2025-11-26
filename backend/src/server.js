@@ -252,6 +252,23 @@ app.get("/api/kunden", async (req, res) => {
 // BESTELLUNGEN
 // ========================================================
 
+// BESTELLUNGEN ABRUFEN (GET)
+app.get("/api/bestellungen", async (req, res) => {
+  try {
+    const bestellungen = await prisma.bestellung.findMany({
+      include: {
+        kunde: true,
+        bestellteProdukte: { include: { produkt: true } }
+      },
+      orderBy: { datum: "desc" }
+    });
+    return res.json(bestellungen);
+  } catch (err) {
+    console.error("Fehler beim Laden Bestellungen:", err);
+    return res.status(500).json({ error: "Bestellungen konnten nicht geladen werden", details: err.message });
+  }
+});
+
 // BESTELLUNGEN — nur POST (Bestellung speichern)
 app.post("/api/bestellungen", async (req, res) => {
   console.log("POST /api/bestellungen body:", JSON.stringify(req.body));

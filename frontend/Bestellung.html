@@ -131,7 +131,7 @@ function renderTable() {
 
   tbody.querySelectorAll(".removeBtn").forEach(b => b.addEventListener("click", (ev) => {
     const idx = Number(ev.target.dataset.index);
-    werekorb.splice(idx, 1);
+    warenkorb.splice(idx, 1);
     renderTable();
   }));
 }

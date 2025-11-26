@@ -63,18 +63,35 @@ async function loadBestellungen() {
 
     bestellungen.forEach(b => {
       const kunde = kunden.find(k => k.id === b.kundeId);
-      const produkt = produkte.find(p => p.id === b.produktId);
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${b.id}</td>
-        <td>${kunde ? kunde.name : "?"}</td>
-        <td>${produkt ? produkt.name : "?"}</td>
-        <td>${b.menge}</td>
-        <td>${(b.menge * (produkt?.preis || 0)).toFixed(2)}</td>
-        <td>${new Date(b.datum).toLocaleDateString()}</td>
-      `;
-      tbody.appendChild(tr);
+      // Jede Bestellung hat mehrere bestellteProdukte -> für jedes eine Zeile
+      if (b.bestellteProdukte && b.bestellteProdukte.length > 0) {
+        b.bestellteProdukte.forEach((bp, idx) => {
+          const produkt = produkte.find(p => p.id === bp.produktId);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${idx === 0 ? b.id : ""}</td>
+            <td>${idx === 0 ? (kunde ? kunde.name : "?") : ""}</td>
+            <td>${produkt ? produkt.name : "?"}</td>
+            <td>${bp.menge}</td>
+            <td>${idx === 0 ? b.gesamtpreis.toFixed(2) : ""}</td>
+            <td>${idx === 0 ? new Date(b.datum).toLocaleDateString() : ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        // Falls keine bestellteProdukte (sollte selten sein)
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${b.id}</td>
+          <td>${kunde ? kunde.name : "?"}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${b.gesamtpreis.toFixed(2)}</td>
+          <td>${new Date(b.datum).toLocaleDateString()}</td>
+        `;
+        tbody.appendChild(tr);
+      }
     });
 
     table.appendChild(tbody);

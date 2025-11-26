@@ -51,8 +51,8 @@ model BestelltesProdukt {
   produktId    String
   menge        Int        @default(1)
   einzelpreis  Float
-  produkt      Produkt    @relation(fields: [produktId], references: [id])
   bestellung   Bestellung @relation(fields: [bestellungId], references: [id])
+  produkt      Produkt    @relation(fields: [produktId], references: [id])
 
   @@unique([bestellungId, produktId])
 }
